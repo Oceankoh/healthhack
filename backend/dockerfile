@@ -24,6 +24,7 @@ WORKDIR /usr/src/app
 # Copy the built application from the previous stage
 COPY --from=builder /usr/src/app/build ./build
 COPY --from=builder /usr/src/app/package*.json ./
+COPY .env .env
 
 # Install only production dependencies
 RUN npm install --only=production
