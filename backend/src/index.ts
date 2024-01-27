@@ -8,12 +8,11 @@ const app = express();
 const port = 3000;
 
 app.use(cors({
-  origin: 'http://frontend' // or your frontend's URL
+  origin: '*' // lazy
 }));
 
 app.use(express.json());
 
-console.log(process.env)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // This is the default and can be omitted
 });
