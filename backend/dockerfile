@@ -1,0 +1,35 @@
+# Step 1: Use a node base image
+FROM node:14-alpine as builder
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json (or yarn.lock if using Yarn)
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application's code
+COPY . .
+
+# Compile TypeScript to JavaScript
+RUN npm run build
+
+# Step 2: Use a smaller base image for the production environment
+FROM node:14-alpine
+
+WORKDIR /usr/src/app
+
+# Copy the built application from the previous stage
+COPY --from=builder /usr/src/app/build ./build
+COPY --from=builder /usr/src/app/package*.json ./
+
+# Install only production dependencies
+RUN npm install --only=production
+
+# Expose the port the app runs on
+EXPOSE 3000
+
+# Command to run the app
+CMD ["node", "build/index.js"]
