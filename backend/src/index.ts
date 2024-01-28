@@ -137,6 +137,10 @@ app.post('/reset', async (req: Request, res: Response) => {
   res.send(file.deleted);
 })
 
+app.get('/healthcheck', async (req: Request, res: Response) => {
+  res.send('ok');
+})
+
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
