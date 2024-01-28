@@ -7,11 +7,13 @@ import fs from 'fs';
 import session from 'express-session';
 import { Thread } from 'openai/resources/beta/threads/threads';
 import { FileObject } from 'openai/resources';
+import { Run } from 'openai/resources/beta/threads/runs/runs';
 
 declare module 'express-session' {
   export interface SessionData {
     thread: Thread;
-    file: FileObject
+    file: FileObject;
+    run: Run;
   }
 }
 
@@ -97,9 +99,26 @@ app.post('/interpret', upload.single('file'), async (req, res) => {
     );
   }
 
-  const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response' 
-  res.send(result);
+  const run = await openai.beta.threads.runs.create(
+    req.session.thread.id,
+    { assistant_id: process.env.ASSISTANT_ID || '' }
+  );
+  // const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response' 
+  res.send(run.status);
 });
+
+app.get('/updates', async (req: Request, res: Response) => {
+  if (!req.session.run || !req.session.thread) return res.send('No run detected');
+
+  const run = await openai.beta.threads.runs.retrieve(
+    req.session.thread.id,
+    req.session.run.id
+  );
+  if (run.status === 'completed') {
+    const messages = await openai.beta.threads.messages.list(req.session.thread.id)
+    res.send((messages.data[0].content[0].type === 'text' ? messages.data[0].content[0].text.value : 'Non textual response'); 
+  }
+})
 
 app.post('/simplify', async (req: Request, res: Response) => {
   if (!req.session.thread) return res.send('Genrate the report first');
