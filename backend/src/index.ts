@@ -116,7 +116,7 @@ app.get('/updates', async (req: Request, res: Response) => {
   );
   if (run.status === 'completed') {
     const messages = await openai.beta.threads.messages.list(req.session.thread.id)
-    res.send((messages.data[0].content[0].type === 'text' ? messages.data[0].content[0].text.value : 'Non textual response'); 
+    res.send((messages.data[0].content[0].type === 'text' ? messages.data[0].content[0].text.value : 'Non textual response')); 
   }
 })
 
