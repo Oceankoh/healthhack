@@ -2,6 +2,10 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+function simplify(){
+  
+}
+
 function App() {
   return (<div className="flex flex-col h-screen p-12">
     <div className="flex flex-1">
