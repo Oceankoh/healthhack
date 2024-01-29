@@ -3,6 +3,7 @@ import "./App.css";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import Markdown from "react-markdown";
 
 function App() {
     const [report, setReport] = useState("Simplified Report will appear here");
@@ -24,7 +25,8 @@ function App() {
             console.log(response.status);
             // if (response.status === 304) return;
             let data = await response.text();
-            if (data !== "No run detected") {
+            if (data !== "No run detected" && !data.startsWith("Please ")) {
+                data = data.replace(/### (.*?)/g, '<h3>$1</h3>');
                 data = data.replace(/\\n/gi, "\n").replace(/\n/gi, "<br/>");
                 setReport(data);
             }
@@ -40,12 +42,12 @@ function App() {
     const updateReport = async (
         endpoint: "/simplify" | "/elaborate"
     ) => {
-        setReport('Loading...');
         const url = `${window.location.protocol}//${window.location.hostname}:3000`;
-
+        
         // Create a FormData object
         const formData = new FormData();
         formData.append("text", report); // Append your string data
+        setReport('Loading...');
 
         try {
             const response = await fetch(url + endpoint, {
@@ -68,6 +70,7 @@ function App() {
             console.error("Error in POST request:", error);
         }
     };
+
 
     const generateReport = async (file: any, text: string) => {
         setReport('Loading...');
@@ -107,10 +110,10 @@ function App() {
         <div className="flex flex-col h-screen p-12">
             <div className="flex h-5/6 flex-1">
                 <div className="w-1/2 flex flex-col space-y-4 justify-start items-center">
-                    <h3 className="text-3xl font-bold w-5/6">Project Title</h3>
+                    <h3 className="text-3xl font-bold w-5/6">Health Lingo</h3>
                     <div className="w-5/6 h-5/6 p-2 border border-gray-300 rounded-lg shadow-md overflow-auto">
                         <ReactMarkdown
-                            children={report}
+                        children={report}
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw]}
                         ></ReactMarkdown>

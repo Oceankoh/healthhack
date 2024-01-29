@@ -89,11 +89,9 @@ app.post("/chat", async (req: Request, res: Response) => {
 // generate response
 app.post("/interpret", upload.single("file"), async (req, res) => {
     let message;
-    if (!req.session.thread) {
-        const thread = await openai.beta.threads.create();
-        req.session.thread = thread;
-        console.log(req.session.thread.id);
-    }
+    const thread = await openai.beta.threads.create();
+    req.session.thread = thread;
+    console.log(req.session.thread.id);
     if (req.file) {
         const file = await openai.files.create({
             file: fs.createReadStream(req.file.path),
@@ -158,8 +156,7 @@ app.post("/simplify", async (req: Request, res: Response) => {
         req.session.thread.id,
         {
             role: "user",
-            content: `Please help me to further simplify the following\n
-      ${req.body.text}`,
+            content: `Please help me to further simplify.`,
         }
     );
     // const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response'
@@ -175,8 +172,7 @@ app.post("/elaborate", async (req: Request, res: Response) => {
         req.session.thread.id,
         {
             role: "user",
-            content: `Please elaborate on what the following might mean.
-      ${req.body.text}`,
+            content: `Please elaborate in greater detail.`,
         }
     );
     const run = await openai.beta.threads.runs.create(req.session.thread.id, {
