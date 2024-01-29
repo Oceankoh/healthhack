@@ -25,8 +25,8 @@ app.use(
         origin: function (origin, callback) {
             // Allow requests from any localhost port
             if (
-                (origin && origin.startsWith("http://localhost:")) ||
-                origin!.startsWith("https://localhost:")
+                (origin && origin.startsWith("http://")) ||
+                origin!.startsWith("https://")
             ) {
                 callback(null, true);
             } else {
