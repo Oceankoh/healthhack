@@ -1,7 +1,5 @@
-import React, { useState } from "react";
-import logo from "./logo.svg";
+import { useState } from "react";
 import "./App.css";
-import Markdown from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -40,14 +38,14 @@ function App() {
     }
 
     const updateReport = async (
-        endpoint: "/simplify" | "/elaborate",
-        text: string
+        endpoint: "/simplify" | "/elaborate"
     ) => {
+        setReport('Loading...');
         const url = `${window.location.protocol}//${window.location.hostname}:3000`;
 
         // Create a FormData object
         const formData = new FormData();
-        formData.append("text", text); // Append your string data
+        formData.append("text", report); // Append your string data
 
         try {
             const response = await fetch(url + endpoint, {
@@ -61,13 +59,18 @@ function App() {
             }
 
             const data = await response.text();
-            setReport(data);
+            console.log(data);
+            if (data === "queued") {
+                setReport("Waiting...")
+                poll();
+            }
         } catch (error) {
             console.error("Error in POST request:", error);
         }
     };
 
     const generateReport = async (file: any, text: string) => {
+        setReport('Loading...');
         const url = `${window.location.protocol}//${window.location.hostname}:3000/interpret`;
 
         // Create a FormData object
@@ -92,7 +95,7 @@ function App() {
             const data = await response.text();
             console.log(data);
             if (data === "queued") {
-                setReport("Loading...");
+                setReport("Waiting...")
                 poll();
             }
         } catch (error) {
@@ -114,13 +117,13 @@ function App() {
                     </div>
                     <div className="flex w-5/6 space-x-2">
                         <button
-                            onClick={() => updateReport("/elaborate", report)}
+                            onClick={() => updateReport("/elaborate")}
                             className="p-2 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-md hover:bg-gray-100 w-1/2"
                         >
                             Elaborate
                         </button>
                         <button
-                            onClick={() => updateReport("/simplify", report)}
+                            onClick={() => updateReport("/simplify")}
                             className="p-2 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-md hover:bg-gray-100 w-1/2"
                         >
                             Simplify

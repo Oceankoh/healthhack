@@ -148,7 +148,7 @@ app.get("/updates", async (req: Request, res: Response) => {
                 : "Non textual response"
         );
     } else {
-      res.send('Waiting...')
+      res.send('Generating response...')
     }
 });
 
