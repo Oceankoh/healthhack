@@ -92,39 +92,52 @@ app.post("/interpret", upload.single("file"), async (req, res) => {
     const thread = await openai.beta.threads.create();
     req.session.thread = thread;
     console.log(req.session.thread.id);
-    if (req.file) {
-        const file = await openai.files.create({
-            file: fs.createReadStream(req.file.path),
-            purpose: "assistants",
-        });
-        req.session.file = file;
-        message = await openai.beta.threads.messages.create(
-            req.session.thread.id,
-            {
-                role: "user",
-                content: `I have attached a PDF of my medical report. Please help me interpret it. Additionally, here are the notes writen by my doctor:\n
+    try {
+        if (req.file) {
+            const file = await openai.files.create({
+                file: fs.createReadStream(req.file.path),
+                purpose: "assistants",
+            });
+            req.session.file = file;
+            message = await openai.beta.threads.messages.create(
+                req.session.thread.id,
+                {
+                    role: "user",
+                    content: `I have attached a PDF of my medical report. Please help me interpret it. Additionally, here are the notes writen by my doctor:\n
         ${req.body.text}`,
-                file_ids: [file.id],
-            }
-        );
-    } else {
-        message = await openai.beta.threads.messages.create(
-            req.session.thread.id,
-            {
-                role: "user",
-                content: `Please help me to interpret the following notes written by my doctor. Only tell me the things related to the diagnosis. You may use other unrelated information as context for understanding but filter it out of the diagnosis interpretation.\n
-        ${req.body.text}`,
-            }
-        );
-    }
+                    file_ids: [file.id],
+                }
+            );
+        } else {
+            message = await openai.beta.threads.messages.create(
+                req.session.thread.id,
+                {
+                    role: "user",
+                    content: `Please help me to interpret the following notes written by my doctor. Only tell me the things related to the diagnosis. You may use other unrelated information as context for understanding but filter it out of the diagnosis interpretation.\n
+            ${req.body.text}`,
+                }
+            );
+        }
 
-    const run = await openai.beta.threads.runs.create(req.session.thread.id, {
-        assistant_id: process.env.ASSISTANT_ID || "",
-    });
-    req.session.run = run;
-    console.log(req.session);
-    // const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response'
-    res.send(run.status);
+        const run = await openai.beta.threads.runs.create(
+            req.session.thread.id,
+            {
+                assistant_id: process.env.ASSISTANT_ID || "",
+            }
+        );
+        req.session.run = run;
+        console.log(req.session);
+        // const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response'
+        res.send(run.status);
+    } catch (e) {
+        const list = await openai.files.list();
+
+        for await (const file of list) {
+            const del = await openai.files.del(file.id);
+            console.log(del);
+        }
+        res.send("An error occurred. Refresh and try again")
+    }
 });
 
 app.get("/updates", async (req: Request, res: Response) => {
@@ -146,7 +159,7 @@ app.get("/updates", async (req: Request, res: Response) => {
                 : "Non textual response"
         );
     } else {
-      res.send('Generating response...')
+        res.send("Generating response...");
     }
 });
 
