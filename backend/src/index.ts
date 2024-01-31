@@ -130,6 +130,7 @@ app.post("/interpret", upload.single("file"), async (req, res) => {
         // const result = message.content[0].type == 'text' ? message.content[0].text.value : 'Model did not return a text response'
         res.send(run.status);
     } catch (e) {
+        console.error(e);
         const list = await openai.files.list();
 
         for await (const file of list) {
